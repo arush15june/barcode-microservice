@@ -1,0 +1,3 @@
+/barcode/
+*.pyc
+/app/__pycache__/
