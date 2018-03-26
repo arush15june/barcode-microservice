@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+    <script>
+            function generate_qrcode(form) {
+                let code_text = document.getElementById("code_data").value
+                if(code_text=='') {
+                    console.log("Incorrect Input")
+                    return;
+                }
+                let url='http://localhost:5000/api'
+                let uri = '/generate';
+                let code_type = 'qr';
+    
+                var xhr = new XMLHttpRequest();
+                let req = url+uri+'?'+'code_type='+code_type+'&text='+code_text
+                console.log(req)
+                xhr.open("GET", req);
+    
+                xhr.onload = () => {
+                    console.log(xhr)
+                    let code_span = document.getElementById('qrcode');
+                    let parser = new DOMParser();
+                    let svg_xml = xhr.responseText;
+                    let svg_doc = parser.parseFromString(svg_xml, "image/svg+xml");
+                    console.log(svg_doc)
+                    let svg_html = svg_doc.documentElement;
+    
+                    code_span.appendChild(svg_html)
+                }
+                xhr.send()
+            }
+        </script>
+
+    <div class = 'row'>
+
+        <div class = 'col-xs-12 col-sm-12 col-md-6 col-lg-6' style='padding:5vh 5vh 5vh 5vh'>
+            <div class = 'container'>
+                <div class='mx-auto'>
+                    <div class = 'form-group'>
+                        <label for='code_data'>QR Code Text</label>
+                        <input type='text' class='form-control' id='code_data' name='code_data'>
+                    </div>
+                    <div class = 'form-group'>
+                        <button onClick='generate_qrcode(this.form)' class='btn btn-primary'>Generate QR Code</button>
+                    </div>
+                </div>
+
+                <span id='qrcode' class='mx-auto'>
+
+                </span>
+            </div>
+        </div>
+
+        <div class = 'col-xs-12 col-sm-12 col-md-6 col-lg-6'>   
+        
+        </div>
+
+    </div>
+
+</body>
+
+</html>

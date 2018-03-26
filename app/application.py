@@ -8,8 +8,10 @@ import sys
 from io import BytesIO
 
 from reader import BarcodeReader
-from flask import Flask, request
+from generator import CodeGenerator
+from flask import Flask, request, make_response
 from flask_restful import Resource, Api, reqparse, abort
+from flask_cors import CORS
 from werkzeug.datastructures import FileStorage
 
 """
@@ -20,6 +22,7 @@ ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png']
 
 app = Flask(__name__)
 app.config.from_object(__name__)
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 api = Api(app)
 
@@ -84,11 +87,31 @@ class Reader(Resource):
             
         return response
 
-        
+class Generator(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('code_type', help='Barcode Type: [qr, ean-13, ean-8]')
+    parser.add_argument('text', help='text to encode')
+    
+    def get(self):
+        args = self.parser.parse_args()
+
+        code_type = args['code_type']
+        text  = args['text']
+
+        generator = CodeGenerator()
+        code_svg = generator.code(code_type, text)
+
+        if code_svg is None:
+            abort(400, message='Invalid Code Type')                
+
+        response = make_response(code_svg)
+        response.headers['content-type'] = 'image/svg+xml'
+        return response
 
 
 
-api.add_resource(Reader, "/scan")
+api.add_resource(Reader, "/api/scan")
+api.add_resource(Generator, "/api/generate")
 
 if __name__ == '__main__':
     app.run(debug=True)
